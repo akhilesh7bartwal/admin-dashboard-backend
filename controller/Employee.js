@@ -46,16 +46,44 @@ exports.signUp =async (req,res) =>{
     catch(error){
         res.status(500).send(error)
     }
-    // employee.save()
-    // .then(
-    //     data =>{
-    //         res.send(data)
-    //     }).catch(error => {res.send(error)})
+
 }
 
-exports.signin = (req,res) =>{
-    employeeModel.find()
-    .then(result =>{
-        res.send(result)
-    }).catch(error => res.status(400).send(error))
+exports.signin = async (req,res) =>{
+    const employee = await employeeModel.findOne({email:req.body.email})
+    if(!employee){
+        return res.status(400).send("Incorrect email.")
+    }
+    const validatePassword = await bcrypt.compare(req.body.password,employee.password)
+    if(!validatePassword) {
+        return res.status(400).send("INCOREECT password.")
+    }
+    try{
+        const loginSchema = Joi.object({
+            email:Joi.string().min(4).required().email(),
+            password:Joi.string().min(8).required()
+        })
+        const {error} = await loginSchema.validateAsync(req.body)
+        if(error) {
+            return res.status(400).send(error.details[0].message)
+        }
+        else{
+         //   res.send("loggin successfully")
+             const token = jwt.sign({_id:employee._id},process.env.TOKEN_SECRET)
+            res.send(token)
+        }
+    }catch(error){
+        res.status(500).send(error)
+    }
+}
+
+
+exports.getEmployees = async(req,res) =>{
+    const allEmp= await employeeModel.find()
+    try{
+        res.status(200).send(allEmp)
+    }
+    catch(error){
+        res.status(500).send(error)
+    }
 }
