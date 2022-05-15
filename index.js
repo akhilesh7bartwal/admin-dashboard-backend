@@ -2,17 +2,18 @@ const express = require('express')
 
 const mongoose = require('mongoose')
 
-const apiroute = require('./routes/auth')
-
 const cors= require('cors')
 
 const app = express()
 
+const apiroute = require('./routes/auth')
+
 let port = 3030
 
-app.use('/',apiroute)
+
 app.use(express.json(),cors())
 
+app.use('/',apiroute)
 
 app.listen(port, ()=>{
     console.log(`api running at "http://localhost:${port}/`)
